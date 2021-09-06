@@ -1,8 +1,7 @@
 import sys
 import zmq
+import os
 
-
-print('triki')
 whois = sys.argv[1]
 port = sys.argv[2]
 context = zmq.Context()
@@ -10,41 +9,69 @@ context = zmq.Context()
 
 def iniciojuego(confirmacion):
     if confirmacion == b'S':
-        print('genial!')
+        print('Genial!')
         return True
 
     else:
         print('Sera la proxima!')
         return False
 
-def escoger_ficha():
-    ficha = input('Con que ficha vas a jugar? >>> ')
-    if ficha == 'O':
-        socket.send(b'Sere [O] y tu [X]')
 
-    elif ficha == 'X':
-        socket.send(b'Sere [X] y tu [O]')
+# def escoger_ficha():
+#     ficha = input('Con que ficha vas a jugar? >>> ')
+#     if ficha == 'O' or ficha == 'o':
+#         socket.send(b'Sere [X] y tu [O]')
+#         return ficha.upper()
 
-    else:
-        print('Esa ficha no juega.')
-        socket.send(b'La ficha no era valida.')
-        return False
-
-
-def tablero():
-    print('''
-         0     1     2
-       _____ _____ _____        
-    0  |   | |   | |   |
-        ¯¯¯   ¯¯¯   ¯¯¯
-       _____ _____ _____
-    1  |   | |   | |   |
-        ¯¯¯   ¯¯¯   ¯¯¯
-       _____ _____ _____
-    0  |   | |   | |   |
-        ¯¯¯   ¯¯¯   ¯¯¯
-        ''')
+#     elif ficha == 'X' or ficha == 'x':
+#         socket.send(b'Sere [O] y tu [X]')
+#         return ficha.upper()
     
+#     else:
+#         print('Esa ficha no juega.')
+#         socket.send(b'La ficha no era valida.')
+#         return False
+
+
+def tablerod():
+    t = [[' ']* 3 for i in range(3) ]
+    print(f'''
+            0     1     2
+           _____ _____ _____        
+        0  | {t[0][0]} | | {t[0][1]} | | {t[0][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+           _____ _____ _____
+        1  | {t[1][0]} | | {t[1][1]} | | {t[1][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+           _____ _____ _____
+        2  | {t[2][0]} | | {t[2][1]} | | {t[2][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+        ''')
+  
+
+
+
+def ubicarficha(ficha):
+    print(f'Juega: {ficha}')
+    t = [[' ']* 3 for i in range(3) ]
+    fila = int(input('En que Fila va a ir esta ficha? >>>'))
+    columna = int(input('En que Columna va a ir esta ficha? >>>'))
+    t[fila][columna] = ficha
+    print(f'''
+             0     1     2
+           _____ _____ _____        
+        0  | {t[0][0]} | | {t[0][1]} | | {t[0][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+           _____ _____ _____
+        1  | {t[1][0]} | | {t[1][1]} | | {t[1][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+           _____ _____ _____
+        2  | {t[2][0]} | | {t[2][1]} | | {t[2][2]} |
+            ¯¯¯   ¯¯¯   ¯¯¯
+        ''')
+
+    
+
 
 if whois == 'servidor':
     print('soy servidor')
@@ -63,11 +90,18 @@ if whois == 'servidor':
     empieza = socket.recv()
     print(f'Recibi esto: {empieza}')
     
-    #fichas escogidas
-    escoger_ficha()
+    #ficha Servidor
+    fichaS = 'O'
 
+    #ficha Cliente
+    fichaC = 'X'
+   
     #pintar tablero para mi 
-    tablero()
+    tablerod()
+
+    #donde ubico mi ficha?
+    ubicarficha(fichaC)
+
 
 elif whois == 'cliente':
     print('soy cliente')
@@ -85,11 +119,18 @@ elif whois == 'cliente':
     if iniciojuego(confirmacion):
         socket.send(b'Voy primero!')
 
-        #ficha
-        socket.recv()
+        #ficha Servidor
+        fichaS = 'O'
 
+        #ficha Cliente
+        fichaC = 'X'
+        
+       
         #pintar tablero para mi 
-        tablero()
+        tablerod()
+
+        #escoger donde va mi ficha
+        ubicarficha(fichaS)
 
 
     
