@@ -71,11 +71,12 @@ def iniciojuego(confirmacion):
         print('Sera la proxima!')
         return False
 
-def posicion(ficha):
+def posicion():
     fila = int(input('Fila en la que deseas ubicar tu ficha? >>> '))
     columna = int(input('Columna en la que deseas ubicar tu ficha? >>> '))
-    tablero = act_tab(ficha, fila, columna)
-    EnviarStatus(tablero)
+    return fila, columna
+    # tablero = act_tab(ficha, fila, columna)
+    # EnviarStatus(tablero)
 
 def act_tab(ficha, fila, columna):
     t[fila][columna] = ficha
@@ -94,13 +95,14 @@ def act_tab(ficha, fila, columna):
     return (tab)
     
 def EnviarStatus(tablero):
-    print(tablero)
     tc = tablero.encode('utf-8')
-    RecibirStatus(tc)
+    socket.send(tc)
+    #RecibirStatus(tc)
 
 
-def RecibirStatus(tc):
+def RecibirStatus():
     #Recibe Tablero Codificado (tc)
+    tc = socket.recv()
     td = tc.decode('utf-8')
     print(td)
 
@@ -133,11 +135,11 @@ if whois == 'servidor':
     while True:
         if turno % 2 != 0:
            #voy a ver que jugada hizo mi oponente
-           e = 1
-          
+            RecibirStatus()
         else:
             #es mi turno, voy a colocar mi ficha 
-            a = 3
+            posicion(fichaS)
+            turno =+1
            
         
 
@@ -168,14 +170,18 @@ elif whois == 'cliente':
         while True:
             if turno % 2 != 0:
                 #es mi turno, voy a colocar mi ficha
-                posicion(fichaC)
-                
+                coor  = posicion()
+                print(coor[0])
 
+                #tablero
+                move = act_tab(fichaC, coor[0], coor[1])
+                print(move)
+
+                #enviar jugada a mi oponente
+                EnviarStatus(move)
             else: 
                 #voy a ver que jugada hizo mi oponente
-                a = 3
-                print(a)
-
+                turno +=1
             #print(t)
     
 else:
