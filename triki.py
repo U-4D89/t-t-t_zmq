@@ -57,7 +57,7 @@ whois = sys.argv[1]
 port = sys.argv[2]
 context = zmq.Context()
 
-turno = 1
+
 
 #tablero
 t = [[' ']* 3 for i in range(3) ]
@@ -71,13 +71,13 @@ def iniciojuego(confirmacion):
         print('Sera la proxima!')
         return False
 
+def posicion(ficha):
+    fila = int(input('Fila en la que deseas ubicar tu ficha? >>> '))
+    columna = int(input('Columna en la que deseas ubicar tu ficha? >>> '))
+    tablero = act_tab(ficha, fila, columna)
+    EnviarStatus(tablero)
 
-def movimiento(ficha):
-    system("clear")
-    print(f'Juega: {jugador.upper()} con la ficha: {ficha}')
-
-    fila = int(input('En que Fila va a ir esta ficha? >>>'))
-    columna = int(input('En que Columna va a ir esta ficha? >>>'))
+def act_tab(ficha, fila, columna):
     t[fila][columna] = ficha
     tab = (f'''
               0     1     2
@@ -91,13 +91,23 @@ def movimiento(ficha):
         2   | {t[2][0]} | | {t[2][1]} | | {t[2][2]} |
              ¯¯¯   ¯¯¯   ¯¯¯
          ''')
-    return(tab)
+    return (tab)
+    
+def EnviarStatus(tablero):
+    print(tablero)
+    tc = tablero.encode('utf-8')
+    RecibirStatus(tc)
 
 
-  
+def RecibirStatus(tc):
+    #Recibe Tablero Codificado (tc)
+    td = tc.decode('utf-8')
+    print(td)
+
 if whois == 'servidor':
     print('soy servidor')
     jugador = 'servidor'
+    turno = 1
     socket = context.socket(zmq.REP)
     socket.bind(f'tcp://*:{port}')
 
@@ -122,20 +132,19 @@ if whois == 'servidor':
 
     while True:
         if turno % 2 != 0:
-            #donde se ubico la primera ficha?
-            f = socket.recv()
-            print (f'{f.decode("utf-8")}')
+           #voy a ver que jugada hizo mi oponente
+           e = 1
           
-        else: 
-            #donde voy a ubicar mi ficha
-            g = movimiento(fichaS).encode('utf-8')
-            socket.send(g)
-            turno += 1
+        else:
+            #es mi turno, voy a colocar mi ficha 
+            a = 3
+           
         
 
 elif whois == 'cliente':
     print('soy cliente')
     jugador = 'cliente'
+    turno = 1
 
     #  Socket to talk to server
     socket = context.socket(zmq.REQ)
@@ -158,16 +167,16 @@ elif whois == 'cliente':
 
         while True:
             if turno % 2 != 0:
-                e = movimiento(fichaC).encode('utf-8')
-                socket.send(e)
-                turno += 1
+                #es mi turno, voy a colocar mi ficha
+                posicion(fichaC)
+                
 
             else: 
-                #donde se ubico la segunda ficha?
-                f = socket.recv()
-                print (f'{f.decode("utf-8")}')
-        
-        print(t)
+                #voy a ver que jugada hizo mi oponente
+                a = 3
+                print(a)
+
+            #print(t)
     
 else:
     print('no se que quien soy :c.')
