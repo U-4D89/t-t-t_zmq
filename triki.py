@@ -173,53 +173,80 @@ else:
 turno = 1
 while True:
 
-    if turno % 2 == 1 and whois == 'cliente' or turno % 2 == 0 and whois == 'servidor':
-         # es mi turno
-         # pintar el tablero actual
-         # preguntar movimiento por consola
-         # pintar el tablero actualizado
-         # enviar mensaje al oponente
-
+    if turno % 2 == 1 and whois == 'cliente':
 
         #es mi turno, voy a colocar mi ficha
         print('Es mi turno!')
         coor  = posicion()
 
-        #tablero
+        #tablero con mi jugada
         move = act_tab(fichaC, coor[0], coor[1])
         print(move)
 
         #enviar jugada a mi oponente
         EnviarStatus(fichaC, coor[0], coor[1])
 
-        print('t8rno', turno)
-
-        turno =+1
+        
         
     else: 
 
         #es el turno de mi oponente
-        # imprimir un mensaje que diga que estoy esperando la jugada
-        # esperar el mensaje
-        # actualizar el tablero segun lo que recibo
-        #voy a ver que jugada hizo mi oponente
-
         print('Es el turno de mi oponente!')
+
+        # imprimir un mensaje que diga que estoy esperando la jugada
         print('Estoy esperando la jugada  . . . ')
 
+        # recibir jugada realizada por mi contrincante
         a = RecibirStatus()
-        print('Recibi esto:', a)
-        
-        print('t8rno', turno)
+
+        # que datos recibi? 
         ficha = a[0]
         fila = int(a[1])
         columna = int(a[2])
 
-        #print((ficha, type(fila), type(columna)))
-
-        #con lo que reciba de a actualizo el tablero, luego lo imprimo
+        #actualizo e imprimo la jugada que recibi
         w = act_tab(ficha, fila, columna)
         print(w)
-        #print(t)   
+
+        #paso el turno 
+        turno =+1
+        print('turno: ', turno)
     
-    
+
+    ############     PARA SERVIDOR   ################
+    if turno % 2 != 0 and whois  != 'servidor': 
+
+        #es el turno de mi oponente
+        print('Es el turno de mi oponente!')
+
+        # imprimir un mensaje que diga que estoy esperando la jugada
+        print('Estoy esperando la jugada  . . . ')
+
+        # recibir jugada realizada por mi contrincante
+        a = RecibirStatus()
+
+        # que datos recibi? 
+        ficha = a[0]
+        fila = int(a[1])
+        columna = int(a[2])
+
+        #actualizo e imprimo la jugada que recibi
+        w = act_tab(ficha, fila, columna)
+        print(w)
+
+        #paso el turno 
+        turno =+1
+        print('turno: ', turno)
+
+            
+    else: 
+        #es mi turno, voy a colocar mi ficha
+        print('Es mi turno!')
+        coor  = posicion()
+
+        #tablero con mi jugada
+        move = act_tab(fichaS, coor[0], coor[1])
+        print(move)
+
+        #enviar jugada a mi oponente
+        EnviarStatus(fichaS, coor[0], coor[1])
