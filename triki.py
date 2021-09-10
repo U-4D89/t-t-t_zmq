@@ -78,6 +78,7 @@ def posicion():
     # tablero = act_tab(ficha, fila, columna)
     # EnviarStatus(tablero)
 
+
 def act_tab(ficha, fila, columna):
     t[fila][columna] = ficha
     tab = (f'''
@@ -94,22 +95,28 @@ def act_tab(ficha, fila, columna):
          ''')
     return (tab)
     
-def EnviarStatus(tablero):
-    tc = tablero.encode('utf-8')
-    socket.send(tc)
-    #RecibirStatus(tc)
+def EnviarStatus(ficha, fila, columna):
+
+    info = f'{ficha},{fila},{columna}'
+
+    #enviar 
+    socket.send_string(info)
+ 
 
 
 def RecibirStatus():
-    #Recibe Tablero Codificado (tc)
-    tc = socket.recv()
-    td = tc.decode('utf-8')
-    print(td)
+    #Recibe ficha y coordenadas codificadas
+    tc = socket.recv_string()
+
+    #separar informacion por ','
+    info = tc.split(',')
+    return info
+ 
+
 
 if whois == 'servidor':
     print('soy servidor')
     jugador = 'servidor'
-    turno = 1
     socket = context.socket(zmq.REP)
     socket.bind(f'tcp://*:{port}')
 
@@ -132,22 +139,13 @@ if whois == 'servidor':
     asignacion = 'Está bien, pero yo {servidor} juego con [O] y tú {cliente} juegas con [X].'
     socket.send(asignacion.encode('utf-8'))
 
-    while True:
-        if turno % 2 != 0:
-           #voy a ver que jugada hizo mi oponente
-            RecibirStatus()
-            turno =+1
-        else:
-            #es mi turno, voy a colocar mi ficha 
-            posicion(fichaS)
+
             
            
-        
 
 elif whois == 'cliente':
     print('soy cliente')
     jugador = 'cliente'
-    turno = 1
 
     #  Socket to talk to server
     socket = context.socket(zmq.REQ)
@@ -168,23 +166,60 @@ elif whois == 'cliente':
         asignacion = socket.recv()
         print(asignacion.decode('utf-8'))
 
-        while True:
-            if turno % 2 != 0:
-                #es mi turno, voy a colocar mi ficha
-                coor  = posicion()
-                print(coor[0])
-
-                #tablero
-                move = act_tab(fichaC, coor[0], coor[1])
-                print(move)
-
-                #enviar jugada a mi oponente
-                EnviarStatus(move)
-                turno =+1
-            else: 
-                #voy a ver que jugada hizo mi oponente
-                RecibirStatus()
-            #print(t)
-    
 else:
     print('no se que quien soy :c.')
+
+
+turno = 1
+while True:
+
+    if turno % 2 == 1 and whois == 'cliente' or turno % 2 == 0 and whois == 'servidor':
+         # es mi turno
+         # pintar el tablero actual
+         # preguntar movimiento por consola
+         # pintar el tablero actualizado
+         # enviar mensaje al oponente
+
+
+        #es mi turno, voy a colocar mi ficha
+        print('Es mi turno!')
+        coor  = posicion()
+
+        #tablero
+        move = act_tab(fichaC, coor[0], coor[1])
+        print(move)
+
+        #enviar jugada a mi oponente
+        EnviarStatus(fichaC, coor[0], coor[1])
+
+        print('t8rno', turno)
+
+        turno =+1
+        
+    else: 
+
+        #es el turno de mi oponente
+        # imprimir un mensaje que diga que estoy esperando la jugada
+        # esperar el mensaje
+        # actualizar el tablero segun lo que recibo
+        #voy a ver que jugada hizo mi oponente
+
+        print('Es el turno de mi oponente!')
+        print('Estoy esperando la jugada  . . . ')
+
+        a = RecibirStatus()
+        print('Recibi esto:', a)
+        
+        print('t8rno', turno)
+        ficha = a[0]
+        fila = int(a[1])
+        columna = int(a[2])
+
+        #print((ficha, type(fila), type(columna)))
+
+        #con lo que reciba de a actualizo el tablero, luego lo imprimo
+        w = act_tab(ficha, fila, columna)
+        print(w)
+        #print(t)   
+    
+    
