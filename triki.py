@@ -136,10 +136,11 @@ if whois == 'servidor':
         if turno % 2 != 0:
            #voy a ver que jugada hizo mi oponente
             RecibirStatus()
+            turno =+1
         else:
             #es mi turno, voy a colocar mi ficha 
             posicion(fichaS)
-            turno =+1
+            
            
         
 
@@ -179,9 +180,10 @@ elif whois == 'cliente':
 
                 #enviar jugada a mi oponente
                 EnviarStatus(move)
+                turno =+1
             else: 
                 #voy a ver que jugada hizo mi oponente
-                turno +=1
+                RecibirStatus()
             #print(t)
     
 else:
