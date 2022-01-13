@@ -10,7 +10,7 @@ For install the requirements
 - [ZeroMQ](https://zeromq.org/languages/python/)
 
 ### How to run? 🚗🌫
- ```python  **player**  **port** ```
+ ```python  player*  port* ```
  
  + The ***player*** must be 'servidor' or 'cliente' otherwise the game cannot start :(.
  + The ***port*** have to be the same for both players otherwise you and your rival will never comminicate :'(
