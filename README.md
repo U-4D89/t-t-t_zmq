@@ -13,9 +13,9 @@ For install the requirements
  ```python  player*  port* ```
  
  + Is necesary use two consoles.
- + The ***player*** must type 'servidor' or 'cliente' otherwise the game cannot start :(.
+ + The ***player*** must type 'server' or 'client' otherwise the game cannot start :(.
  + The ***port*** have to be the same for both players otherwise you and your rival will never comminicate :'(.
 
  + Example: 
-   - python servidor 3632
-   - python cliente 3632
+   - python server
+   - python client
