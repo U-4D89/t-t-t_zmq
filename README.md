@@ -1,13 +1,15 @@
 # Tic Tac Toe
 The clasic game but you can play with other player using your console!!
 
+### Requirements
+ - Python version 3.9.6
+
 ### Instalation 🔧
 For install the requirements
 ```pip install requirements.txt```
 
 ### Made it with 🔨
-- Python version 3.9.6
-- [ZeroMQ](https://zeromq.org/languages/python/)
+ - [ZeroMQ](https://zeromq.org/languages/python/)
 
 ### How to run? 🚗🌫
  ```python  player*  port* ```
@@ -19,3 +21,9 @@ For install the requirements
  + Example: 
    - python server
    - python client
+
+
+
+---
+‼ Important
+ Actually the project is on pause, I am bit stucked . . .
