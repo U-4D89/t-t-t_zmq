@@ -49,166 +49,218 @@
         si hay casillas que no contengan espacios = ' '
 '''
 
-import sys
 import zmq
-from os import system
+import sys
+import os 
 
-whois = sys.argv[1]
-port = sys.argv[2]
+who_is = sys.argv[1].lower() 
+port = 3526 or sys.argv[2]
 context = zmq.Context()
 
 
+brd = [ ['']*3 for _ in range(3) ]
 
-#tablero
-t = [[' ']* 3 for i in range(3) ]
 
-def iniciojuego(confirmacion):
-    if confirmacion == b'S':
-        print('Genial!, Vamos a jugar')
-        return True
+
+def clear_console():
+    os.system("cls")
+
+
+def game_is_started(response, player):
+    print(f'{player}: {response}')
+    if player == 'server': 
+        if response == b'Y' or response == b'y':
+            print('We are goin to play!!')
+            return True
+        else:
+            print('Maybe the next time :(')
+            return False
 
     else:
-        print('Sera la proxima!')
-        return False
-
-def posicion():
-    fila = int(input('Fila en la que deseas ubicar tu ficha? >>> '))
-    columna = int(input('Columna en la que deseas ubicar tu ficha? >>> '))
-    return fila, columna
-    # tablero = act_tab(ficha, fila, columna)
-    # EnviarStatus(tablero)
+        if response == 'Y' or response == 'y':
+            print('We are goin to play!!')
+            return True
+        else:
+            print('Seems like you dont want play')
+  
 
 
-def act_tab(ficha, fila, columna):
-    t[fila][columna] = ficha
-    tab = (f'''
+def initial_board():
+    act_brd = (f'''
               0     1     2
             _____ _____ _____        
-        0   | {t[0][0]} | | {t[0][1]} | | {t[0][2]} |
+        0   |   | |   | |   |
              ¯¯¯   ¯¯¯   ¯¯¯
-            _____ _____ _____
-        1   | {t[1][0]} | | {t[1][1]} | | {t[1][2]} |
+            _____ _____ _____        
+        1   |   | |   | |   |
              ¯¯¯   ¯¯¯   ¯¯¯
-            _____ _____ _____
-        2   | {t[2][0]} | | {t[2][1]} | | {t[2][2]} |
+            _____ _____ _____        
+        2   |   | |   | |   |
              ¯¯¯   ¯¯¯   ¯¯¯
          ''')
-    return (tab)
-    
-def EnviarStatus(ficha, fila, columna):
+    return (act_brd)
 
-    info = f'{ficha},{fila},{columna}'
+       
 
-    #enviar 
+
+def ask_coordinates():
+    #       0 <= n <= 2     mayor igual 0 && menor igual 2
+    row = int(input('''In which *ROW* do you want put your token?
+    >>> '''))
+    col = int(input('''In which *COLUMN* do you want put your token?
+    >>> '''))
+
+    if not 0 <= row <= 2 or not 0 <= col <= 2:
+        print('Please numbers between 0 and 2')
+        ask_coordinates()
+
+
+    return row, col
+     
+
+
+def update_board(token, coordinates):
+   
+    row = int(coordinates[0])
+    col = int(coordinates[1])
+
+    brd[row][col] = token
+    act_brd = (f'''
+              0     1     2
+            _____ _____ _____        
+        0   | {brd[0][0]} | | {brd[0][1]}  | | {brd[0][2]}  |
+             ¯¯¯   ¯¯¯   ¯¯¯
+            _____ _____ _____
+        1   | {brd[1][0]} | | {brd[1][1]}  | | {brd[1][2]}  |
+             ¯¯¯   ¯¯¯   ¯¯¯
+            _____ _____ _____
+        2   | {brd[2][0]} | |  {brd[2][1]} | | {brd[2][2]}  |
+             ¯¯¯   ¯¯¯   ¯¯¯
+         ''')
+    return act_brd
+
+
+def send(token, coordinates):
+    info = f'{token}{coordinates}'
     socket.send_string(info)
- 
 
 
-def RecibirStatus():
-    #Recibe ficha y coordenadas codificadas
-    tc = socket.recv_string()
-
-    #separar informacion por ','
-    info = tc.split(',')
-    return info
- 
+def recieve():
+    new_move = socket.recv_string()
+    return new_move
 
 
-if whois == 'servidor':
-    print('soy servidor')
-    jugador = 'servidor'
+
+
+
+
+
+
+
+
+if who_is == 'client':
+    print('Im the client')
+    player = 'client'
+
+    #connect with the host
     socket = context.socket(zmq.REP)
     socket.bind(f'tcp://*:{port}')
+      
+    #server asks if client want to play
+    received_q = socket.recv() 
+    print(f'Server: {received_q.decode("utf-8")}')
 
-    #coneccion establecida
-    saludo = socket.recv()
-    print(f'Recibi esto: {saludo}')
-
-    #enviar respuesta (quiero jugar si o no?)
-    confirmacion = input('>>> ')
-    socket.send(confirmacion.encode('utf-8'))
-
-    #quien empieza?
-    empieza = socket.recv()
-    print(f'Recibi esto: {empieza}')
+    #response to play
+    response_to_play = input('>>> ')
+    socket.send(response_to_play.encode('utf-8'))
     
-    #ficha Servidor
-    ficha = 'O'
-    turno = 0
+    if game_is_started(response_to_play, player) is True:
+        print(response_to_play, player)
+        #you want play
+        server_starts =  socket.recv()
+        print(f'{server_starts.decode("utf-8")} and Client use the [X] sign . . .')
+        
 
-    #enviar la asignacion de fichas
-    asignacion = 'Está bien, pero yo {servidor} juego con [O] y tú {cliente} juegas con [X].'
-    socket.send(asignacion.encode('utf-8'))
+        token = 'X'
+        turn = 0
+        print(initial_board())
 
+    else: socket.close()
 
-            
-           
+    
+    
+   
 
-elif whois == 'cliente':
-    print('soy cliente')
-    jugador = 'cliente'
+    
 
-    #  Socket to talk to server
+        
+    
+###
+elif who_is == 'server':
+    print('Im the server')
+    player = 'server'
+    #connect to the host
     socket = context.socket(zmq.REQ)
     socket.connect(f'tcp://localhost:{port}')
+    
+    #ask to play
+    socket.send_string('Hey!, Do you want to play? [y/n]')
+    response_to_play = socket.recv()
+    print(f'Client: {response_to_play.decode("utf-8")}')
 
-    socket.send(b'Hola, quieres jugar triki SI o NO [S/N]?')
-    confirmacion = socket.recv()
-    print(confirmacion.decode('utf-8'))
+    #check the response
+    if game_is_started(response_to_play, player) is True:
 
-    #Confirmacion positiva, escoger quien empieza
-    if iniciojuego(confirmacion):
-        socket.send(b'Voy primero!')
+        socket.send_string('Server goes first and play with [O]')
 
-        #ficha Cliente
-        ficha = 'X'
-        turno = 1
+        token = 'O'
+        turn = 1
+   
+        print('I go first and play with [O] sign . . .')
+        print(initial_board())
+
+    else: socket.close()
+
+
         
-        #fichas asignadas
-        asignacion = socket.recv()
-        print('Recibi esto: ', asignacion.decode('utf-8'))
-
 else:
-    print('no se que quien soy :c.')
+    print('I do not know who I am :(')
 
 
-print(ficha)
-while True:
-
-    if turno % 2 == 1:
-
-        #es mi turno, voy a colocar mi ficha
-        print('Es mi turno!')
-        coor  = posicion()
-
-        #tablero con mi jugada
-        move = act_tab(ficha, coor[0], coor[1])
-        print(move)
-
-        #enviar jugada a mi oponente
-        EnviarStatus(ficha, coor[0], coor[1])
-
-    else: 
-
-        #es el turno de mi oponente
-        print('Es el turno de mi oponente!')
-
-        # imprimir un mensaje que diga que estoy esperando la jugada
-        print('Estoy esperando la jugada  . . . ')
-
-        # recibir jugada realizada por mi contrincante
-        a = RecibirStatus()
-
-        # que datos recibi? 
-        ficha_recibida = a[0]
-        fila = int(a[1])
-        columna = int(a[2])
-
-        #actualizo e imprimo la jugada que recibi
-        w = act_tab(ficha_recibida, fila, columna)
-        print(w)
 
 
-    #paso el turno 
-    turno += 1
-    print('turno: ', turno)
+while True and turn < 10:
+
+    if turn % 2 != 1:
+        print('My turn', token)
+
+    
+        #need to be updated for eache turn
+        coordinates = ask_coordinates()
+        movement = update_board(token, coordinates)
+        print(movement)
+
+        #send my move to the board for my oponent
+        send(token, coordinates)
+
+  
+
+    else:
+        print('Oponents turn, waiting')
+        print('. . . ')
+
+        #movement of my oponent
+        last_move = recieve()
+        print(last_move)
+      
+        coordinates = [last_move[2], last_move[5]]
+
+        actual_board = update_board(last_move[0], coordinates)
+        print(actual_board)
+        
+
+    if turn == 10:
+        print('Is a tie!')
+        break
+
+    turn += 1
